@@ -1,5 +1,8 @@
 # buncord
 
+## Why?
+Just for learning purposes, and can be usefull for someone in the future
+
 To install dependencies:
 
 ```bash
