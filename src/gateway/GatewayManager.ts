@@ -1,10 +1,13 @@
 import EventEmitter from 'events'
-import { Packet } from "./GatewayEvents"
+import { Opcode, Packet } from './GatewayEvents'
 import { Opcodes } from './Opcodes'
 import * as dispatchEvents from './dispatchEvents'
+import { SocketCloseCode, SocketCloseCodes } from './CloseCodes'
 
 export interface GatewayManagerOptions {
   apiVersion: string
+  intents: number
+  token: string
 }
 
 export class GatewayManager {
@@ -14,9 +17,11 @@ export class GatewayManager {
 
   events: EventEmitter
 
-  options: GatewayManagerOptions = {
-    apiVersion: '10'
-  }
+  options = {
+    apiVersion: '10',
+    intents: 0,
+    token: undefined,
+  } as Partial<GatewayManagerOptions>
 
   constructor(_options: GatewayManagerOptions) {
     Object.assign(this.options, _options)
@@ -25,19 +30,55 @@ export class GatewayManager {
     this.events = new EventEmitter()
   }
 
-
   async connect() {
     return new Promise((resolve, reject) => {
       if (!this.connection) {
         this.connection = new WebSocket(this.gatewayUrl)
 
-        this.connection.addEventListener('message', (e) => this._onWSMessage.call(this, e.data))
+        this.connection.addEventListener('message', (e) =>
+          this._onWSMessage.call(this, e.data),
+        )
 
         this.events.once('ready', resolve)
       } else {
         reject()
       }
     })
+  }
+
+  disconnect() {
+    // TODO: better disconnect :+1:
+    if (this.connection) {
+      this.connection.close()
+      this.connection = undefined
+    }
+  }
+
+  heartbeat() {
+    this.sendWS(Opcodes.HEARTBEAT, {})
+  }
+
+  identify() {
+    return this.sendWS(Opcodes.IDENTIFY, {
+      token: this.options.token,
+      intents: this.options.intents,
+      properties: {
+        $os: process.platform.toLowerCase(),
+        $browser: 'buncord',
+        $device: 'buncord',
+      },
+    })
+  }
+
+  sendWS(op: Opcode, data: any) {
+    if (this.connection) {
+      const packet = JSON.stringify({
+        op,
+        d: data,
+      })
+
+      this.connection.send(packet)
+    }
   }
 
   _onDispatch(packet: Packet) {
@@ -53,6 +94,22 @@ export class GatewayManager {
     switch (packet.op) {
       case Opcodes.DISPATCH: {
         this._onDispatch(packet)
+      }
+    }
+  }
+
+  _onWSClose(code: SocketCloseCode) {
+    switch (code) {
+      case SocketCloseCodes.DISALLOWED_INTENTS: {
+        throw new Error('Disallowed intents provided')
+      }
+
+      case SocketCloseCodes.INVALID_INTENTS: {
+        throw new Error('Invalid intents provided')
+      }
+
+      default: {
+        throw new Error('Socket closed by unknown reason')
       }
     }
   }

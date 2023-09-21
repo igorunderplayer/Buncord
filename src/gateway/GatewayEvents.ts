@@ -1,9 +1,9 @@
 import * as dispatchEvents from './dispatchEvents'
 
-export type Opcodes = 0 | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | 11
+export type Opcode = 0 | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | 11
 
 export interface Packet {
-  op: Opcodes
+  op: Opcode
   d?: any
   s?: number
   t?: DispatchEvent

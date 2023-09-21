@@ -54,7 +54,7 @@ export default class Application {
    */
   summary: string
 
-  /** 
+  /**
    * @description   If the application belongs to a team, this will be a list of the members of that team
    */
   team: any
