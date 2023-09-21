@@ -23,6 +23,9 @@ export class GatewayManager {
     token: undefined,
   } as Partial<GatewayManagerOptions>
 
+  heartbeatInterval?: Timer
+  sessionId?: string
+
   constructor(_options: GatewayManagerOptions) {
     Object.assign(this.options, _options)
 
@@ -94,6 +97,23 @@ export class GatewayManager {
     switch (packet.op) {
       case Opcodes.DISPATCH: {
         this._onDispatch(packet)
+        break
+      }
+
+      case Opcodes.HELLO: {
+        if (packet.d.heartbeat_interval > 0) {
+          if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval)
+          }
+          this.heartbeatInterval = setInterval(
+            () => this.heartbeat(),
+            packet.d.heartbeat_interval,
+          )
+        }
+
+        this.identify()
+        this.heartbeat()
+        break
       }
     }
   }
