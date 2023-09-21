@@ -11,3 +11,5 @@ export const Opcodes = {
   HELLO: 10,
   HEARTBEAT_ACK: 11,
 } as const
+
+export type Opcode = (typeof Opcodes)[keyof typeof Opcodes]

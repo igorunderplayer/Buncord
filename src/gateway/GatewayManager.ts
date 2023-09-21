@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
-import { Opcode, Packet } from './GatewayEvents'
-import { Opcodes } from './Opcodes'
+import { Packet } from './GatewayEvents'
+import { Opcode, Opcodes } from './Opcodes'
 import * as dispatchEvents from './dispatchEvents'
 import { SocketCloseCode, SocketCloseCodes } from './CloseCodes'
 

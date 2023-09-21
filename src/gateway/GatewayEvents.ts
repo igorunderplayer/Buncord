@@ -1,6 +1,5 @@
+import { Opcode } from './Opcodes'
 import * as dispatchEvents from './dispatchEvents'
-
-export type Opcode = 0 | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | 11
 
 export interface Packet {
   op: Opcode
